@@ -9,4 +9,12 @@ RSpec.configure do |config|
 
   # == Mock Framework
   config.mock_with :rspec
+  
+  # # include MyHelpers module in every acceptance spec
+  # config.include MyHelpers, :type => :acceptance
+  # 
+  # config.before(:each, :type => :acceptance) do
+  #   # Some code to run before any acceptance spec
+  # end
+  
 end
