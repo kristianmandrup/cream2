@@ -6,6 +6,24 @@ h2. Status (feb 3)
 
 Setup dummy apps for _Active Record_ and _Mongoid_ with initial _RSpec_ and _Capybara_ testing.
 
+h2. Ideas
+
+To use any of the controller actions here, the user must be a real "Rock'n Rolla"!!!
+
+<pre>
+class MyController < SomeController
+  before_filter :must_be_rockn_rolla
+
+  def must_be_rockn_rolla
+    # or simply: unless the_user && the_user.has_role?(:rockn_rolla) do
+    unless signed_in?(nil) && the_user.has_role?(:rockn_rolla) do
+      redirect_to '/'
+    end
+  end
+end  
+</pre>
+ 
+
 h2. License
 
 This project rocks and uses MIT-LICENSE.
