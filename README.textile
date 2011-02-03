@@ -1,0 +1,11 @@
+h1. Cream2
+
+A full refactoring of Cream, using *enginex* with multiple dummy applications to ensure it works in multiple Rails app scenarios and ORM configurations!
+
+h2. Status (feb 3)
+
+Setup dummy apps for _Active Record_ and _Mongoid_ with initial _RSpec_ and _Capybara_ testing.
+
+h2. License
+
+This project rocks and uses MIT-LICENSE.
