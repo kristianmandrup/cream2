@@ -21,8 +21,85 @@ class MyController < SomeController
     end
   end
 end  
+</pre> 
+
+h2. Callbacks and listeners
+
+Warden has support for several callbacks
+
+I want to add a prepend event for each Warden callback and then call a Cream eventhandler which can further delegate to a small publish/subscribe for easier customization.
+
+h2. Session
+
+The session should have a seperate cream namespace, like session[:cream] = {:user_id => 34, ...}
+
+Using sessions in Rails is pretty trivial.  You simply have to call the session method from inside your controller and assign a value to a key:
+
+session[:user] = { :name => 'Nick', :birthdate => Time.parse('1974-07-04') }
+
+Sessions are stored in Rails as a Base64 encoded Marshal string dump.  This means that anything you’re wanting to store in a session must be serializable by Ruby’s Marshal API.  You also should probably avoid storing any large amounts of data (say a chart or graphic), critical data or objects.  If you store critical data you risk losing it, because the nature of a session is semi-permanent.
+
+You also want to avoid storing objects, but instead store references to those objects (user_id vs. an actual User).  This is especially true of objects that have attributes that are apt to change.  You’ll run into headaches trying to keep the object data in sync with the session data.  Also when you modify an object’s structure you may run into issues with older sessions that still are holding on to the old object structure.  Sharing session data across applications can also be a challenge if you store custom objects.  In short just don’t do it, always reference objects.  It’s however relatively safe to store standard data objects (like String, Hash, Array, Time, etc.)
+
+h2. Warden scopes
+
+Warden allows for multiple users to be logged in at the same time. This should be used very cautiously.
+
+Sudo access, or a publisher checking what viewing it as another user will look like, or a secured authentication step for checkout. You could also use scopes to authenticate a users access to a particular account.
+
+By default the scope is :default. The :default scope is used whenever no scope is stated.
+
+<pre>
+env['warden'].logout  # Clear the session.  Logs everyone out
+env['warden'].logout(:default) # logout the :default user  
+</pre> 
+
+<pre>
+  env['warden'].session[:foo] = "bar"
+  # With scope:
+  env['warden'].session(:admin)[:foo] = "Admin Bar"  
 </pre>
- 
+
+
+h2. Warden callbacks
+
+Use these hooks to customize Cream specific logic for login, logout etc.
+
+<pre>
+Warden::Manager.prepend_before_logout do |user, auth, opts|
+  ...
+end
+
+Warden::Manager.prepend_after_authentication do |user,auth,opts|
+  user.last_login = Time.now
+end  
+
+Warden::Manager.before_logout do |user,auth,opts|
+  user.forget_me!
+  user.last_logout = Time.now
+  auth.response.delete_cookie "remember_token"
+end
+
+</pre>      
+
+h3. after_set_user
+
+This is called every time the user is set. The user is set:
+
+* on each request when they are accessed for the first time via env[‘warden’].user
+* when the user is initially authenticated
+* when the user is set via the set_user method
+
+Example:
+
+<pre>
+Warden::Manager.after_set_user do |user, auth, opts|
+  unless user.active?
+    auth.logout
+    throw(:warden, :message => "User not active")
+  end
+end
+</pre>
 
 h2. License
 
